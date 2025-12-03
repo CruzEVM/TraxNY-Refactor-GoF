@@ -76,9 +76,12 @@ public interface IProductOperation {
     void ExecuteProcess();
 }
 ```
+---
 ### 7. Métodos sueltos → Command
 
 Operaciones encapsuladas y reutilizables.
+
+---
 
 ### 8. Sin sistema de eventos → Observer / Mediator
 
@@ -87,6 +90,7 @@ Nada notificaba cambios.
 **Solución:**
 Capa IOutput que recibe eventos.
 
+---
 ### 9. Dependencia a consola → Adapter
 
 El código usaba directamente Console.WriteLine.
@@ -94,6 +98,7 @@ El código usaba directamente Console.WriteLine.
 **Solución:**
 ConsoleOutputAdapter implementa IOutput.
 
+---
 ### 10. Nuevos productos rompen el flujo → Factory Method
 
 Sin fábrica, había que modificar código.
@@ -101,6 +106,7 @@ Sin fábrica, había que modificar código.
 **Solución:**
 OCP asegurado gracias a la fábrica.
 
+---
 ### 11. Violación DIP → Interfaces
 
 El manager dependía de clases concretas.
@@ -108,6 +114,76 @@ El manager dependía de clases concretas.
 **Solución:**
 Inyección de IProductFactory y IOutput.
 
+---
 ### 12. Difícil de testear → Adapter
 
 Salida desacoplada para pruebas unitarias.
+
+---
+## 3. Diagramas UML (Antes / Después)
+### 📌 Antes – Código rígido
+```csharp
+@startuml
+
+class ProductionManager {
+  +Produce(type: string)
+}
+
+class GoldIngot
+class Diamond
+class Chain
+
+ProductionManager --> GoldIngot
+ProductionManager --> Diamond
+ProductionManager --> Chain
+
+note right
+Código acoplado.
+Condicionales con strings.
+Violación SRP, OCP y DIP.
+end note
+
+@enduml
+```
+### 📌 Después – Aplicación de patrones GoF
+```csharp
+@startuml
+
+enum ProductType {
+  GoldIngot
+  Diamond
+  Chain
+}
+
+interface IProductOperation {
+  +ExecuteProcess()
+}
+
+interface IProductFactory {
+  +CreateProduct(type: ProductType): IProductOperation
+}
+
+interface IOutput {
+  +Write(msg: string)
+}
+
+class ProductionManager {
+  -factory : IProductFactory
+  -output : IOutput
+  +Produce(type: ProductType)
+}
+
+class ProductFactory implements IProductFactory
+class ConsoleOutputAdapter implements IOutput
+
+class GoldIngot implements IProductOperation
+class DiamondLab implements IProductOperation
+class Chain implements IProductOperation
+
+ProductionManager --> IProductFactory
+ProductionManager --> IOutput
+ProductFactory --> IProductOperation
+ConsoleOutputAdapter --> IOutput
+
+@enduml
+```
